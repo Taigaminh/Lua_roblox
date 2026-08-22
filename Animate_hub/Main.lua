@@ -230,7 +230,7 @@ function ButtonTop:addTextBox(Text, Placeholder, Callback)
 end
 
 function ButtonTop:SearchButton(listBase)
-  local OutPut={
+  local Output={
     SelectedValue = listBase[1] or "",
     MainButton = nil,               
     DropdownList = nil
@@ -336,7 +336,6 @@ keotheochuot(Title,frame)
 local Animate=ButtonTop.addButton("Animate")
 local Mic=ButtonTop.addButton("Mic")
 
-local Save_A=Animate_Dictionary["Toy"]
 local Animate_Dictionary = {
   ["Astronaut"] = {
     ["Idle"]  = {"891621366", "891633237", "1047759695"},
@@ -394,7 +393,6 @@ local Animate_Dictionary = {
     ["Fall"]  = "707829716",
     ["Climb"] = "707826056"
   },
-  {
   ["Ninja"] = {
     ["Run"]   = "656118852",
     ["Walk"]  = "656121766",
@@ -476,7 +474,7 @@ local Animate_Dictionary = {
     ["Climb"] = "616156119"
   }
 }
-
+local Save_A=Animate_Dictionary["Toy"]
 
 local pack_List={}
 for i,_ in pairs(Animate_Dictionary) do
@@ -507,8 +505,8 @@ local function overrideRunAnimation(character,Name,Id)
   local Value = animateScript:FindFirstChild(Name:lower())
   if Value then
     if Name=="Idle" then
-      save_Animate(Value,Id[1],"Animate1")
-      save_Animate(Value,Id[2],"Animate2")
+      save_Animate(Value,Id[1],"Animation1")
+      save_Animate(Value,Id[2],"Animation2")
     else
       save_Animate(Value,Id,Name.."Anim")
     end
@@ -521,10 +519,6 @@ local function overrideRunAnimation(character,Name,Id)
     end
   end
 end
-
-Animate:addClickButton("MgsNotification",function()
-  showNotification("msg","cccccxcccc",5)
-end)
 
 Anima=Animate:SearchButton(pack_List)
 Tye=Animate:SearchButton({"all","Idle","Walk","Run","Jump","Fall","Climb"})
