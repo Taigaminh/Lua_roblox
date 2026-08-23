@@ -95,11 +95,17 @@ Scrolling.BorderSizePixel = 1
 Scrolling.BorderColor3 = Color3.fromRGB(0, 255, 255)
 Scrolling.ScrollBarThickness = 0
 Scrolling.Visible = false
+Scrolling.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Scrolling.CanvasSize = UDim2.new(0, 0, 0, 0)
 
 -- 🌟 Thêm UIListLayout vào Khung Nội Dung Mẫu để sau này các tính năng bên trong tự xếp hàng thẳng thớm
 local RightListLayout = Instance.new("UIListLayout")
 RightListLayout.Padding = UDim.new(0, 5)
 RightListLayout.Parent = Scrolling
+RightListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    Scrolling.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 10)
+end)
+
 
 local textTextBox = Instance.new("TextBox")
 textTextBox.Name = "TextBox"
@@ -247,8 +253,6 @@ function ButtonTop:SearchButton(listBase)
   ScrollingList.Size=UDim2.new(0.4, 0, 0.4, 0)
   ScrollingList.ZIndex = 20
   Output.DropdownList = ScrollingList
-  local listLayOut = LeftListLayout:Clone()
-  listLayOut.Parent = ScrollingList
   local function updateDropdownPosition()
     -- Tính toán vị trí thực tế của ô bấm đối với khung frame lớn
     local absPosFrame = frame.AbsolutePosition
@@ -538,6 +542,7 @@ Animate:addClickButton("set",function()
 end)
 
 LocalPlayer.CharacterAdded:Connect(function(newCharacter)
+  task.wait(0.5)
   Character = newCharacter
   Humanoid = newCharacter:WaitForChild("Humanoid")
   for i,j in pairs(Save_A) do
