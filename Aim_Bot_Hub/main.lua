@@ -360,11 +360,11 @@ keotheochuot(Title,frame)
 local espObjects = {}
 local playerConnections={}
 local SetAim={
-    AIM_ASSIST_ENABLED = false
-    Target="HumanoidRootPart"
-    Target_Var=Vector3.new(0,0,0)
-    TargetVisible = false
-    Predicted=false
+    AIM_ASSIST_ENABLED = false,
+    Target="HumanoidRootPart",
+    Target_Var=Vector3.new(0,0,0),
+    TargetVisible = false,
+    Predicted=false,
     FOV_RADIUS = 150
 }
 
@@ -450,21 +450,19 @@ local function applyESP_1(player)
         if SetAim.AIM_ASSIST_ENABLED then
             local target,Distance = getTargetClosestToCrosshair()
             if target then
+                local targetPosition=target.Position
                 if SetAim.Predicted then
                     local targetChar = target.Parent
                     local hrp = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
                     local predictionTime = 0.136 -- Thời gian dự đoán (giây), điều chỉnh tùy thuộc vào Ping
-                    local predictedPosition = target.Position
                     
                     if hrp then
-                        predictedPosition = target.Position + (hrp.AssemblyLinearVelocity * predictionTime)
+                        targetPosition = target.Position + (hrp.AssemblyLinearVelocity * predictionTime)
                     end
-                    local targetCFrame = CFrame.lookAt(currentCFrame.Position, predictedPosition)
-                else
-                    local targetCFrame = CFrame.lookAt(currentCFrame.Position, target.Position)
                 end
                 local currentCFrame = Camera.CFrame
-                local smoothness = (distance <= 25) and 0.025 or 0.1
+                local targetCFrame = CFrame.lookAt(currentCFrame.Position, targetPosition)
+                local smoothness = (Distance <= 25) and 0.025 or 0.1
                 local alpha = 1 - math.exp(-smoothness * deltaTime * 60)
                 Camera.CFrame = currentCFrame:Lerp(targetCFrame, alpha)
             end
