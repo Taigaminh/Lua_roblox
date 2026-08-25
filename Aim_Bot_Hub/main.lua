@@ -45,7 +45,7 @@ frame.Parent=MenuGUI
 
 local Title = Instance.new("TextButton")
 Title.Name = "Title"
-Title.Text = "nho nhac Hub"
+Title.Text = "nho nhac Hub.               make by: Next :> "
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Size = UDim2.new(1, 0, 0.05, 0)
 Title.Position = UDim2.new(0, 0, 0, 0)
@@ -109,7 +109,6 @@ RightListLayout.Parent = Scrolling
 RightListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     Scrolling.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 10)
 end)
-
 
 local textTextBox = Instance.new("TextBox")
 textTextBox.Name = "TextBox"
@@ -218,7 +217,7 @@ end
 
 local function addToggle(Text, Callback)
   local Enabled = false
-  buttonToggle = textButton:Clone()
+  local buttonToggle = textButton:Clone()
   buttonToggle.Text=Text..":OFF"
   buttonToggle.TextColor3 = Color3.fromRGB(255, 100, 100)  
   buttonToggle.MouseButton1Click:Connect(function()
@@ -367,6 +366,66 @@ local SetAim={
     Predicted=false,
     FOV_RADIUS = 150
 }
+local eng={
+    AimBot_Button=false,
+    tam=false,
+    Fov=false
+}
+
+local AimBot_Button1=frame:Clone()
+AimBot_Button1.Position=UDim2.new(0.6, 0, 0.2, 0)
+AimBot_Button1.Size=UDim2.new(0.2,0,0.1,0)
+AimBot_Button1.Visible=eng.AimBot_Button
+AimBot_Button1.Parent=MenuGUI
+
+local keo_tha=textButton:Clone()
+keo_tha.Text=""
+keo_tha.Position=UDim2.new(0,0,0,0)
+keo_tha.Size=UDim2.new(1,0,0.2,0)
+keo_tha.Parent=AimBot_Button1
+
+local cl=addToggle("Aim Bot",function(en)
+    SetAim.AIM_ASSIST_ENABLED=en
+end)
+cl.Position=UDim2.new(0,0,0.2,0)
+cl.Size=UDim2.new(1,0,0.8,0)
+cl.Parent=AimBot_Button1
+
+keotheochuot(keo_tha,AimBot_Button1)
+
+local tam = Instance.new("Frame")
+tam.Name = "Tam"
+tam.AnchorPoint = Vector2.new(0.5, 0.5)
+tam.Position = UDim2.new(0.5, 0, 0.5, 0)  -- Đặt vào trung tâm màn hình
+tam.Size = UDim2.new(0, 5, 0,5)
+tam.BorderSizePixel = 1
+tam.Visible=eng.tam
+tam.Parent = MenuGUI
+
+local fovFrame = Instance.new("Frame")
+fovFrame.Name = "FOVCircle"
+fovFrame.AnchorPoint = Vector2.new(0.5, 0.5) -- Đặt điểm mốc ở chính giữa khung
+fovFrame.Position = UDim2.new(0.5, 0, 0.5, 0)  -- Đặt vào trung tâm màn hình
+fovFrame.Size = UDim2.new(0, SetAim.FOV_RADIUS * 2, 0, SetAim.FOV_RADIUS * 2)
+fovFrame.BackgroundTransparency = 1 
+fovFrame.BorderSizePixel = 0
+fovFrame.Visible=eng.Fov
+fovFrame.Parent = MenuGUI
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(255,0,0) 
+uiStroke.Thickness = 1.5 
+uiStroke.Transparency = 0.5
+uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+uiStroke.Parent = fovFrame
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(1, 0) 
+uiCorner.Parent = fovFrame
+
+local aspectRatio = Instance.new("UIAspectRatioConstraint")
+aspectRatio.AspectRatio = 1
+aspectRatio.Parent = fovFrame
 
 local function isTargetVisible(camera, targetPart, ignoreList)
     local origin = camera.CFrame.Position
@@ -374,18 +433,14 @@ local function isTargetVisible(camera, targetPart, ignoreList)
     local direction = targetPos - origin --vector huong tu camera den target
     
     local raycastParams = RaycastParams.new()
-    raycastParams.FilterType = RaycastFilterType.Exclude -- Bỏ qua các vật thể trong danh sách
+    raycastParams.FilterType = Enum.RaycastFilterType.Exclude or Enum.RaycastFilterType.Blacklist
     
     -- Bỏ qua bản thân người chơi local và nhân vật mục tiêu (chỉ kiểm tra vật cản môi trường)
-    raycastParams.FilterDescendantsInstances = ignoreList or {}
+    raycastParams.FilterDescendantsInstances = ignoreList 
     
     local raycastResult = workspace:Raycast(origin, direction, raycastParams)
     
-    if raycastResult then
-        return false
-    else
-        return true
-    end
+    return raycastResult==nil
 end
 
 local function getTargetClosestToCrosshair(Var)
@@ -397,23 +452,26 @@ local function getTargetClosestToCrosshair(Var)
         if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local character = player.Character
             local humanoid = character:FindFirstChildOfClass("Humanoid")
-            local hrp = character.HumanoidRootPart
-            local head = character.Head
-            if Var=="Head" then hrp=head end
+            local targetPart = nil
             
+            if Var == "Head" then 
+                targetPart = character:FindFirstChild("Head")
+            else
+                targetPart = character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
+            end   
             if humanoid and humanoid.Health > 0 then
-                local screenPosition, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+                local screenPosition, onScreen = Camera:WorldToViewportPoint(targetPart.Position)
                 
                 if onScreen then
                     
-                    if SetAim.TargetVisible then if not isTargetVisible(Camera,hrp) then return end end
+                    if SetAim.TargetVisible then if not isTargetVisible(Camera,targetPart,{Character,targetPart.Parent,Camera}) then continue end end
                     
                     local targetPos2D = Vector2.new(screenPosition.X, screenPosition.Y)
                     local distanceFromCenter = (targetPos2D - viewportCenter).Magnitude
                     
                     if distanceFromCenter < shortestDistance then
                         shortestDistance = distanceFromCenter
-                        closestTarget = hrp
+                        closestTarget = targetPart
                     end
                 end
             end
@@ -422,13 +480,35 @@ local function getTargetClosestToCrosshair(Var)
     return closestTarget,shortestDistance
 end
 
+RunService.RenderStepped:Connect(function(deltaTime)
+    if SetAim.AIM_ASSIST_ENABLED then
+        local target,Distance = getTargetClosestToCrosshair()
+        if target then
+            local targetPosition=target.Position
+            if SetAim.Predicted then
+                local targetChar = target.Parent
+                local hrp = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
+                local predictionTime = 0.136 -- Thời gian dự đoán (giây), điều chỉnh tùy thuộc vào Ping
+                    
+                if hrp then
+                    targetPosition = target.Position + (hrp.AssemblyLinearVelocity * predictionTime)
+                end
+            end
+            local currentCFrame = Camera.CFrame
+            local targetCFrame = CFrame.lookAt(currentCFrame.Position, targetPosition)
+            local smoothness = (Distance <= 0.25) and 0.1 or 0.5
+            local alpha = 1 - math.exp(-smoothness * deltaTime * 60)
+            Camera.CFrame = currentCFrame:Lerp(targetCFrame, alpha)
+        end
+    end
+end)
 local function applyESP_1(player)
     if player == LocalPlayer then return end
     
     local box = Drawing.new("Square")
     box.Thickness = 1.5
     box.Filled = false
-    box.Color = Color3.fromRGB(255, 0, 0)
+    box.Color = Color3.fromRGB(255, 0, 0) or player.TeamColor
     box.Visible = false
 
     local healthBar = Drawing.new("Square")
@@ -446,27 +526,6 @@ local function applyESP_1(player)
     
     local renderConnection
     renderConnection = RunService.RenderStepped:Connect(function()
-        
-        if SetAim.AIM_ASSIST_ENABLED then
-            local target,Distance = getTargetClosestToCrosshair()
-            if target then
-                local targetPosition=target.Position
-                if SetAim.Predicted then
-                    local targetChar = target.Parent
-                    local hrp = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
-                    local predictionTime = 0.136 -- Thời gian dự đoán (giây), điều chỉnh tùy thuộc vào Ping
-                    
-                    if hrp then
-                        targetPosition = target.Position + (hrp.AssemblyLinearVelocity * predictionTime)
-                    end
-                end
-                local currentCFrame = Camera.CFrame
-                local targetCFrame = CFrame.lookAt(currentCFrame.Position, targetPosition)
-                local smoothness = (Distance <= 25) and 0.025 or 0.1
-                local alpha = 1 - math.exp(-smoothness * deltaTime * 60)
-                Camera.CFrame = currentCFrame:Lerp(targetCFrame, alpha)
-            end
-        end
         
         local character = player.Character
         if not character then 
@@ -544,7 +603,7 @@ local function applyESP(character)
     
     local highlight = Instance.new("Highlight")
     highlight.Name = "TeamESP"
-    highlight.FillColor = Color3.fromRGB(255, 0, 0)
+    highlight.FillColor = Color3.fromRGB(255, 0, 0) or player.TeamColor
     highlight.FillTransparency = 0.5
     highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
@@ -628,37 +687,59 @@ local Aim_Bot=ButtonTop.addButton("Aim_bot")
 local Esp=ButtonTop.addButton("Esp")
 local Mic=ButtonTop.addButton("Mic")
 
-local textFov=addTextBox("100")
+local textFov=addTextBox("150")
 textFov.Parent=Aim_Bot
 textFov.LayoutOrder=0
 
 local setFov=addClickButton("set Fov",function()
-    SetAim.FOV_RADIUS = textFov.Text
+    SetAim.FOV_RADIUS = tonumber(textFov.Text)
+    fovFrame.Size = UDim2.new(0, SetAim.FOV_RADIUS * 2, 0, SetAim.FOV_RADIUS * 2)
 end)
 setFov.Parent=Aim_Bot
 setFov.LayoutOrder=1
 
+local ShowFov=addToggle("Show Fov",function(en)
+    eng.Fov=en
+    fovFrame.Visible=en
+end)
+ShowFov.Parent=Aim_Bot
+ShowFov.LayoutOrder=2
+
 local ChoseAim_Bot,out_put_Aim_Bot=SearchButton({"Head","HumanoidRootPart"})
 ChoseAim_Bot.Parent = Aim_Bot
-ChoseAim_Bot.LayoutOrder=2
+ChoseAim_Bot.LayoutOrder=3
 
 local Check_Aim_Bot=addToggle("TargetVisible",function(Enabled)
     SetAim.TargetVisible=Enabled
 end)
 Check_Aim_Bot.Parent=Aim_Bot
-Check_Aim_Bot.LayoutOrder=3
+Check_Aim_Bot.LayoutOrder=4
 
 local Peri_Aim_Bot=addToggle("Predicted",function(Enabled)
     SetAim.Predicted=Enabled
 end)
 Peri_Aim_Bot.Parent=Aim_Bot
-Peri_Aim_Bot.LayoutOrder=4
+Peri_Aim_Bot.LayoutOrder=5
 
 local Enabled_Aim_Bot=addToggle("Aim_Bot",function(Enabled)
     SetAim.AIM_ASSIST_ENABLED=Enabled
 end)
 Enabled_Aim_Bot.Parent=Aim_Bot
-Enabled_Aim_Bot.LayoutOrder=5
+Enabled_Aim_Bot.LayoutOrder=6
+
+local kt1=addToggle("Button Aim (mobile)",function(en)
+    eng.AimBot_Button=en
+    AimBot_Button1.Visible=en
+end)
+kt1.Parent=Aim_Bot
+kt1.LayoutOrder=7
+
+local kt2=addToggle("tam ngam",function(en)
+    eng.tam=en
+    tam.Visible=en
+end)
+kt2.Parent=Aim_Bot
+kt2.LayoutOrder=8
 
 local ChoseEsp,out_put_1=SearchButton({"Type_1","Type_2"})
 ChoseEsp.Parent = Esp
@@ -706,6 +787,4 @@ local tolEsp = addToggle("ESP_Play", function(Enabled)
 end)
 tolEsp.Parent = Esp
 tolEsp.LayoutOrder=11
-
-
 
