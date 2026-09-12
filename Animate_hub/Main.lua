@@ -617,9 +617,13 @@ local function overrideRunAnimation(character,Name,Id)
   end
 end
 
-Anima=Animate:SearchButton(pack_List)
-Tye=Animate:SearchButton({"all","Idle","Walk","Run","Jump","Fall","Climb"})
-Animate:addClickButton("set",function()
+Anima=SearchButton(pack_List)
+Anima.Parent=Animate
+Anima.LayoutOrder=2
+Tye=SearchButton({"all","Idle","Walk","Run","Jump","Fall","Climb"})
+Tye.Parent=Animate
+Tye.LayoutOrder=1
+but1=addClickButton("set",function()
   if Tye.SelectedValue=="" then
     return
   end
@@ -633,6 +637,8 @@ Animate:addClickButton("set",function()
     overrideRunAnimation(Character,Tye.SelectedValue,Save_A[Tye.SelectedValue])
   end
 end)
+but1.Parent=Animate
+but1.LayoutOrder=3
 
 LocalPlayer.CharacterAdded:Connect(function(newCharacter)
   task.wait(0.5)
