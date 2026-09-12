@@ -2,12 +2,18 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
 
 -- Tạo GUI 
 local MenuGUI = Instance.new("ScreenGui")
 MenuGUI.Name = "MenuGUI"
 MenuGUI.DisplayOrder = 0
 MenuGUI.IgnoreGuiInset = true
+MenuGUI.ResetOnSpawn = false
 MenuGUI.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local frameIcon = Instance.new("Frame")
@@ -39,7 +45,7 @@ frame.Parent=MenuGUI
 
 local Title = Instance.new("TextButton")
 Title.Name = "Title"
-Title.Text = "nho nhac Hub"
+Title.Text = "nho nhac Hub.               make by: Next :> "
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Size = UDim2.new(1, 0, 0.05, 0)
 Title.Position = UDim2.new(0, 0, 0, 0)
@@ -92,11 +98,17 @@ Scrolling.BorderSizePixel = 1
 Scrolling.BorderColor3 = Color3.fromRGB(0, 255, 255)
 Scrolling.ScrollBarThickness = 0
 Scrolling.Visible = false
+Scrolling.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Scrolling.CanvasSize = UDim2.new(0, 0, 0, 0)
 
 -- 🌟 Thêm UIListLayout vào Khung Nội Dung Mẫu để sau này các tính năng bên trong tự xếp hàng thẳng thớm
 local RightListLayout = Instance.new("UIListLayout")
 RightListLayout.Padding = UDim.new(0, 5)
+RightListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 RightListLayout.Parent = Scrolling
+RightListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    Scrolling.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y + 10)
+end)
 
 local textTextBox = Instance.new("TextBox")
 textTextBox.Name = "TextBox"
@@ -125,6 +137,64 @@ textLabelTop.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 textLabelTop.BorderSizePixel = 1
 textLabelTop.BorderColor3 = Color3.fromRGB(0, 255, 255)
 
+--Notification
+local FrameNotification = Instance.new("Frame")
+FrameNotification.Name="FrameNotification"
+FrameNotification.Size=UDim2.new(0.2, 0, 0.1, 0)
+FrameNotification.Position=UDim2.new(1, 0, 0, 0)
+FrameNotification.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+FrameNotification.Visible = false
+
+local TitleNotification = Instance.new("TextLabel")
+TitleNotification.Name="TitleNotification"
+TitleNotification.TextColor3=Color3.fromRGB(255, 255, 255)
+TitleNotification.Size=UDim2.new(1,0,0.4,0)
+TitleNotification.Position=UDim2.new(0,0,0,0)
+TitleNotification.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+TitleNotification.Parent = FrameNotification
+
+local MgsNotification = Instance.new("TextLabel")
+MgsNotification.Name="MgsNotification"
+MgsNotification.TextColor3=Color3.fromRGB(255, 255, 255)
+MgsNotification.Size=UDim2.new(1,0,0.6,0)
+MgsNotification.Position=UDim2.new(0,0,0.4,0)
+MgsNotification.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MgsNotification.Parent=FrameNotification
+
+--MgsNotification
+local tweenInfo = TweenInfo.new(0.5,Enum.EasingStyle.Quint,Enum.EasingDirection.Out)
+local function showNotification(title, message, duration)
+  local Var=FrameNotification:Clone()
+  Var.Parent = MenuGUI
+  Var.TitleNotification.Text=title
+  Var.MgsNotification.Text=message
+  Var.Visible=true
+  local tweenIn = TweenService:Create(Var, tweenInfo, {Position = UDim2.new(0.8,0,0,0)})
+  tweenIn:Play()
+  tweenIn.Completed:Wait()
+  task.wait(duration or 5)
+  local tweenOut = TweenService:Create(Var, tweenInfo, {Position = UDim2.new(1, 0, 0, 0)})
+  tweenOut:Play()
+  tweenOut.Completed:Wait()
+  Var:Destroy()
+end
+
+local function LockButtonEnabled(button, enabled)
+    button.Interactable = enabled
+    button.Active = enabled
+    button.AutoButtonColor = enabled -- Tắt hiệu ứng đổi màu khi di chuột vào
+
+    if enabled then
+        button.BackgroundColor3 = Color3.fromRGB(0,0,0) -- Màu chính
+        button.TextTransparency = 0
+        button.BackgroundTransparency = 0
+    else
+        button.BackgroundColor3 = Color3.fromRGB(100, 100, 100) -- Màu xám
+        button.TextTransparency = 0.5
+        button.BackgroundTransparency = 0.3
+    end
+end
+
 --thiet keu nut bam
 local ButtonTop={}
 ButtonTop.__index = ButtonTop
@@ -142,65 +212,66 @@ function ButtonTop.addButton(Name)
     Child.Frame.Visible=true
   end)
   setmetatable(Child, ButtonTop)
-  return Child
+  return Child.Frame
 end
 
-function ButtonTop:addToggle(Text, Callback)
-  local Toggle = {}
+local function addToggle(Text, Callback)
   local Enabled = false
-  Toggle.buttonToggle = textButton:Clone()
-  Toggle.buttonToggle.Text=Text..":OFF"
-  Toggle.buttonToggle.Parent=self.Frame
-  Toggle.buttonToggle.MouseButton1Click:Connect(function()
+  local buttonToggle = textButton:Clone()
+  buttonToggle.Text=Text..":OFF"
+  buttonToggle.TextColor3 = Color3.fromRGB(255, 100, 100)  
+  buttonToggle.MouseButton1Click:Connect(function()
     Enabled = not Enabled
     if Enabled then
-      Toggle.buttonToggle.Text=Text..":ON"
+      buttonToggle.Text=Text..":ON"
+      buttonToggle.TextColor3 = Color3.fromRGB(100, 255, 100)  
     else
-      Toggle.buttonToggle.Text=Text..":OFF"
+      buttonToggle.Text=Text..":OFF"
+      buttonToggle.TextColor3 = Color3.fromRGB(255, 100, 100)  
     end
     if Callback then task.spawn(Callback,Enabled) end
   end)
+    return buttonToggle
 end
 
-function ButtonTop:addClickButton(Text, Callback)
+local function addClickButton(Text, Callback)
   local ClickBtn = textButton:Clone()
   ClickBtn.Text = Text
-  ClickBtn.Parent = self.Frame
   ClickBtn.MouseButton1Click:Connect(function()
     if Callback then task.spawn(Callback) end
   end)
+    return ClickBtn
 end
 
-function ButtonTop:addTextBox(Text, Placeholder, Callback)
+local function addTextBox(Placeholder)
   local NewTextBox = textTextBox:Clone()
   NewTextBox.PlaceholderText = Placeholder
-  NewTextBox.Text = ""
-  NewTextBox.Parent = self.Frame
+  NewTextBox.Text = Placeholder
   -- Khi người chơi nhập xong và nhấn Enter
   NewTextBox.FocusLost:Connect(function(enterPressed)
-    if Callback then 
-      task.spawn(Callback, NewTextBox.Text, enterPressed) 
-    end
+      NewTextBox.Text = enterPressed
   end)
+    return NewTextBox
 end
 
-function ButtonTop:SearchButton(listBase, Callback)
+local function SearchButton(listBase)
+  local Output={
+    SelectedValue = listBase[1] or "",
+    MainButton = nil,               
+    DropdownList = nil
+  }
   local Frameem = frameTop:Clone()
-  Frameem.Parent = self.Frame
+  Frameem.Parent=parent  
   local textButtonFind = textButton:Clone()
-  textButtonFind.Size = UDim2.new(0.5, 0, 1, 0)
+  textButtonFind.Text=  "....."
+  textButtonFind.Size = UDim2.new(1, 0, 1, 0)
   textButtonFind.Parent = Frameem
+  Output.MainButton=textButtonFind
   local ScrollingList = Scrolling:Clone()
   ScrollingList.Parent = frame
   ScrollingList.Size=UDim2.new(0.4, 0, 0.4, 0)
   ScrollingList.ZIndex = 20
-  local listLayOut = LeftListLayout:Clone()
-  listLayOut.Parent = ScrollingList
-  local Button = textButton:Clone()
-  Button.Parent = Frameem
-  Button.Position = UDim2.new(0.5, 0, 0, 0)
-  Button.Size=UDim2.new(0.5, 0, 1, 0)
-  Button.Text = "getitem"
+  Output.DropdownList = ScrollingList
   local function updateDropdownPosition()
     -- Tính toán vị trí thực tế của ô bấm đối với khung frame lớn
     local absPosFrame = frame.AbsolutePosition
@@ -216,22 +287,18 @@ function ButtonTop:SearchButton(listBase, Callback)
     ButtonInto.Parent = ScrollingList
     ButtonInto.MouseButton1Click:Connect(function()
       textButtonFind.Text = ButtonInto.Text
+      Output.SelectedValue = ButtonInto.Text
       ScrollingList.Visible = false
     end)
   end
-  
+    
   textButtonFind.MouseButton1Click:Connect(function()
     if not ScrollingList.Visible then
       updateDropdownPosition() 
     end
     ScrollingList.Visible = not ScrollingList.Visible
   end)
-  
-  if Callback then
-    Button.MouseButton1Click:Connect(function()
-      task.spawn(Callback,textButtonFind.Text)
-    end)
-  end
+  return Frameem,Output
 end
 
 local function keotheochuot(Button,framemove)
@@ -285,5 +352,6 @@ closeButton.MouseButton1Up:Connect(function()
   frame.Visible = false
 end)
 
+--set up menu
 keotheochuot(Icon,frameIcon)
 keotheochuot(Title,frame)
