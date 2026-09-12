@@ -617,12 +617,12 @@ local function overrideRunAnimation(character,Name,Id)
   end
 end
 
-Anima=SearchButton(pack_List)
-Anima.Parent=Animate
-Anima.LayoutOrder=2
-Tye=SearchButton({"all","Idle","Walk","Run","Jump","Fall","Climb"})
-Tye.Parent=Animate
-Tye.LayoutOrder=1
+chose1,Anima=SearchButton(pack_List)
+chose1.Parent=Animate
+chose1.LayoutOrder=2
+chose2,Tye=SearchButton({"all","Idle","Walk","Run","Jump","Fall","Climb"})
+chose2.Parent=Animate
+chose2.LayoutOrder=1
 but1=addClickButton("set",function()
   if Tye.SelectedValue=="" then
     return
