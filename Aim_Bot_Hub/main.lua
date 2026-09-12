@@ -356,6 +356,22 @@ end)
 keotheochuot(Icon,frameIcon)
 keotheochuot(Title,frame)
 
+local function LockButtonEnabled(button, enabled)
+    button.Interactable = enabled
+    button.Active = enabled
+    button.AutoButtonColor = enabled -- Tắt hiệu ứng đổi màu khi di chuột vào
+
+    if enabled then
+        button.BackgroundColor3 = Color3.fromRGB(0,0,0) -- Màu chính
+        button.TextTransparency = 0
+        button.BackgroundTransparency = 0
+    else
+        button.BackgroundColor3 = Color3.fromRGB(100, 100, 100) -- Màu xám
+        button.TextTransparency = 0.5
+        button.BackgroundTransparency = 0.3
+    end
+end
+
 local espObjects = {}
 local playerConnections={}
 local SetAim={
