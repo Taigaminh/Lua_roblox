@@ -446,6 +446,7 @@ FrameMap.Visible=false
 FrameMap.Parent=MenuGUI
 
 local Title_Map=textButton:Clone()
+Title_Map.Text="Mini map"
 Title_Map.Size=UDim2.new(1,0,0.2,0)
 Title_Map.Position=UDim2.new(0,0,-0.2,0)
 Title_Map.Parent=FrameMap
@@ -501,13 +502,14 @@ teacherInstance1.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 teacherInstance1.Size = UDim2.new(0,8,0,8)
 teacherInstance1.Parent = Map
 local teacher_look=vec_look:Clone()
-teacher_look.Parent=playInstance1
+teacher_look.Parent=teacherInstance1
 
 local Play = { CFrame = nil, Position = nil, Rotation = nil }
 local Teacher = { CFrame = nil, Position = nil, Rotation = nil }
 
 local Mini_Map = {
-    fov=60,
+    var=0,
+    fov=70,
     length=300,
     playInstance = playInstance1,
     teacherInstance = teacherInstance1,
@@ -539,15 +541,12 @@ else
 end
 
 local function huong_nh(CFrame1,CFrame2,huong)
-    local var=0
-    local deltaX=(CFrame1.X-CFrame2.X)
-    local deltaY=(CFrame1.Z-CFrame2.Z)
-    local angleInRadians = math.atan2(deltaX,deltaY)
-    local angleInDegrees = math.deg(angleInRadians)
-    local angleInDegrees = -(angleInDegrees+90+Mini_Map.fov)%360
-    local angleInDegrees1 = -(angleInDegrees-2*Mini_Map.fov)%360
-    if angleInDegrees>huong and angleInDegrees1<huong then return true end
-    return false 
+    local angleInRadians = math.atan2(CFrame1.X-CFrame2.X,CFrame1.Z-CFrame2.Z)
+    local angleInDegrees = -1*math.deg(angleInRadians)
+    local delta=math.abs(huong-angleInDegrees)
+    if delta > 180 then delta=360-delta end
+    if delta < Mini_Map.fov then return false end
+    return true
 end
 
 local function getPlayerRotation(characterModel)
@@ -676,6 +675,7 @@ ButMap = addToggle("Show Map", function(ed)
                 i:Destroy()
             end
             Mini_Map.list_play={}
+        end
         if Mini_Map.list_desk then
             for _,i in ipairs(Mini_Map.list_desk) do
                 i:Destroy()
@@ -722,7 +722,7 @@ RunService.RenderStepped:Connect(function()
             return
         end
         local distance = (Play.CFrame.Position - Teacher.CFrame.Position).Magnitude
-        if distance > 28 or (distance >= 10 and huong_nh(Play.CFrame,Teacher.CFrame,Teacher.Rotation))then
+        if distance > 28 or (distance >= 15 and huong_nh(Play.CFrame,Teacher.CFrame,Teacher.Rotation))then
             if not Main1.auto_Farme then
                 Main1.auto_Farme = task.spawn(function()
                     local phone = backPack:FindFirstChild("Phone1") or Character:FindFirstChild("Phone1")
@@ -747,7 +747,7 @@ RunService.RenderStepped:Connect(function()
                     if Main1.answer.Text=="" then Main1.answer.Text="1000" end
                     tool_Equit("Phone1")
                     local var=1
-                    while Gui.autoFarme and Main1.seat and var and var <= Main1.len do 
+                    while Gui.autoFarme and Main1.seat and var and var < Main1.len do 
                         var=auto_Farme_Logic() or 1
                     end
                     Main1.auto_Farme = nil
