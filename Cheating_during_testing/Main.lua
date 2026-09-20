@@ -8,7 +8,6 @@ local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 
--- Bảng màu Modern Dark Theme
 local THEME = {
     Background = Color3.fromRGB(18, 18, 24),
     Container = Color3.fromRGB(28, 28, 36),
@@ -21,12 +20,13 @@ local THEME = {
     CloseBtn = Color3.fromRGB(235, 60, 80)
 }
 
--- Hàm hỗ trợ tạo UICorner nhanh
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, radius or 6)
+
 local function addCorner(parent, radius)
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, radius or 6)
-    corner.Parent = parent
-    return corner
+    local corner1 = corner:Clone()
+    corner1.Parent = parent
+    return corner1
 end
 
 -- Tạo ScreenGUI
@@ -437,25 +437,25 @@ local Main = ButtonTop.addButton("Main")
 local Mis = ButtonTop.addButton("Mis")
 
 local Class = workspace:WaitForChild("Classroom")
-local Walls = Class:WaitForChild("Build",3)
-local SizeWall = Walls:GetExtentsSize()
-local room = Walls:GetPivot() 
 
 local FrameMap=frameTop:Clone()
-FrameMap.Size=UDim2.new(0.2,0,0.2*0.8*SizeWall.Z/SizeWall.X,0)
+FrameMap.Size=UDim2.new(0,150,0,150)
 FrameMap.Position=UDim2.new(0.5,0,0.5,0)
+FrameMap.BackgroundTransparency=0.35
 FrameMap.Visible=false
 FrameMap.Parent=MenuGUI
 
 local Title_Map=textButton:Clone()
 Title_Map.Size=UDim2.new(1,0,0.2,0)
-Title_Map.Position=UDim2.new(0,0,0,0)
+Title_Map.Position=UDim2.new(0,0,-0.2,0)
 Title_Map.Parent=FrameMap
 
 local Map=frameTop:Clone()
-Map.Size=UDim2.new(1,0,0.8,0)
-Map.Position=UDim2.new(0,0,0.2,0)
+Map.Size=UDim2.new(1,0,1,0)
+Map.Position=UDim2.new(0,0,0,0)
 Map.Parent=FrameMap
+local mapCo=Map:FindFirstChild("UICorner")
+if mapCo then mapCo.CornerRadius=UDim.new(1,0) end
 
 keotheochuot(Title_Map,FrameMap)
 
@@ -463,13 +463,12 @@ local circle = Instance.new("Frame")
 circle.Name = "Circle"
 circle.Size = UDim2.new(0,5,0,5)
 circle.AnchorPoint = Vector2.new(0.5,0.5)
-circle.BackgroundColor3 = Color3.fromRGB(0, 0, 255)
+circle.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
 local vec_look = Instance.new("Frame")
 vec_look.Name="look"
 vec_look.Size = UDim2.new(0,2.5,0,7.5)
 vec_look.AnchorPoint = Vector2.new(0.5,1)
 vec_look.Position = UDim2.new(0.5,0,0.5,0)
-vec_look.Parent=circle
 local uiCorner = Instance.new("UICorner")
 uiCorner.CornerRadius = UDim.new(1, 0)
 uiCorner.Parent=circle
@@ -482,82 +481,327 @@ uiStroke.Color = Color3.fromRGB(0, 0, 255)
 uiStroke.Thickness = 1
 uiStroke.Parent = desk
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local toolEvents = ReplicatedStorage:WaitForChild("ToolEvents")
+local playAnimRemote = toolEvents:WaitForChild("PlayAnimation")
+local toolActionRemote = toolEvents:WaitForChild("ToolAction")
+local PlayerAnswerTable = ReplicatedStorage:WaitForChild("PlayerAnswerTable")
+local backPack = LocalPlayer:WaitForChild("Backpack")
+
+local playInstance1 = circle:Clone()
+playInstance1.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+playInstance1.Position = UDim2.new(0.5,0,0.5,0)
+playInstance1.Size = UDim2.new(0,8,0,8)
+playInstance1.Parent = Map
+local play_look=vec_look:Clone()
+play_look.Parent=playInstance1
+
+local teacherInstance1 = circle:Clone()
+teacherInstance1.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+teacherInstance1.Size = UDim2.new(0,8,0,8)
+teacherInstance1.Parent = Map
+local teacher_look=vec_look:Clone()
+teacher_look.Parent=playInstance1
+
+local Play = { CFrame = nil, Position = nil, Rotation = nil }
+local Teacher = { CFrame = nil, Position = nil, Rotation = nil }
+
+local Mini_Map = {
+    fov=60,
+    length=300,
+    playInstance = playInstance1,
+    teacherInstance = teacherInstance1,
+    list_desk = {},
+    list_play = {}
+}
+
+local Gui = {
+    map_open = false,
+    autoFarme = false
+}
+
+local Main1 = {
+    auto_Farme = nil,
+    count = 0,
+    answer = nil,
+    seat = nil,
+    len = 0,
+    anxiety = {
+        nub=nil,
+        var=false
+    }
+}
+
+local anxiety = LocalPlayer:FindFirstChild("PlayerGui") and LocalPlayer.PlayerGui:FindFirstChild("StatGui") and LocalPlayer.PlayerGui.StatGui:FindFirstChild("Anxiety") and LocalPlayer.PlayerGui.StatGui.Anxiety:FindFirstChild("AnxietyBarClip") and LocalPlayer.PlayerGui.StatGui.Anxiety.AnxietyBarClip:FindFirstChild("AnxietyBar")
+if not anxiety then showNotification("err","loi gui") 
+else
+    Main1.anxiety.nub=anxiety
+end
+
+local function huong_nh(CFrame1,CFrame2,huong)
+    local var=0
+    local deltaX=(CFrame1.X-CFrame2.X)
+    local deltaY=(CFrame1.Z-CFrame2.Z)
+    local angleInRadians = math.atan2(deltaX,deltaY)
+    local angleInDegrees = math.deg(angleInRadians)
+    local angleInDegrees = -(angleInDegrees+90+Mini_Map.fov)%360
+    local angleInDegrees1 = -(angleInDegrees-2*Mini_Map.fov)%360
+    if angleInDegrees>huong and angleInDegrees1<huong then return true end
+    return false 
+end
+
 local function getPlayerRotation(characterModel)
+    if not characterModel then return 0 end
     local Head = characterModel:FindFirstChild("Head")
-    if not Head then showNotification("err","loi Head") return end
+    if not Head then 
+        showNotification("err", "loi Head của " .. characterModel.Name) 
+        return 0 
+    end
     local lookVector = Head:GetPivot().LookVector
     local angleInRadians = math.atan2(lookVector.X, lookVector.Z)
     local angleInDegrees = math.deg(angleInRadians)
     return -angleInDegrees
 end
 
-local function update(play,teacher)
-    local Play_Po=Character:GetPivot()
-    if Play_Po and play then
-        play.Position = UDim2.new(0.5-(Play_Po.X-room.X)/SizeWall.X,0,0.5-(Play_Po.Z-room.Z)/SizeWall.Z,0)
-        play.Rotation = getPlayerRotation(Character)
+local function update()
+    local Play_Po = Character:GetPivot()
+    if Play_Po then
+        Play.CFrame = Play_Po
+        Play.Position = UDim2.new(0.5, 0, 0.5, 0)
+        Play.Rotation = getPlayerRotation(Character)
+    else
+        showNotification("err", "khong thay play")
     end
-    local Teacher=Workspace:FindFirstChild("Teacher")
-    if Teacher and teacher then
-        Teacher_Po = Teacher:GetPivot()
-        teacher.Position = UDim2.new(0.5-(Teacher_Po.X-room.X)/SizeWall.X,0,0.5-(Teacher_Po.Z-room.Z)/SizeWall.Z,0)
-        teacher.Rotation = getPlayerRotation(Teacher)
+
+    local Teacher1 = Workspace:FindFirstChild("Teacher")
+    if Teacher1 then
+        local Teacher_Po = Teacher1:GetPivot()
+        Teacher.CFrame = Teacher_Po
+        Teacher.Position = UDim2.new(0.5+(Play_Po.X-Teacher_Po.X)/Mini_Map.length*2,0, 0.5+(Play_Po.Z-Teacher_Po.Z)/Mini_Map.length*2,0) or UDim2.new(0,0,0,0)
+        Teacher.Rotation = getPlayerRotation(Teacher1)
     end
 end
 
-local function show_dest(dest)
-    local list1={}
-    for _,i in ipairs(dest:GetChildren()) do
-        if i:IsA("Model") and i.Name=="Desk" then
-            local Size=i:GetExtentsSize()
-            local Po=i:GetPivot()
-            local desk1=desk:Clone()
-            desk1.Size=UDim2.new(Size.X/SizeWall.X,0,Size.Z/SizeWall.Z,0)
-            desk1.Position=UDim2.new(0.5-(Po.X-room.X)/SizeWall.X,0,0.5-(Po.Z-room.Z)/SizeWall.Z,0)
-            desk1.Parent=Map
-            table.insert(list1,desk1)
+local function show_Mini(dest)
+    local list1 = {}
+    for _,i in ipairs(Players:GetChildren()) do
+        local playvar=i.Character
+        if not playvar then return end
+        if i ~= LocalPlayer and not Mini_Map.list_play[i.Name] then
+            local CFrameplay=playvar:GetPivot()
+            local human = circle:Clone()
+            human.Position = UDim2.new(0.5+(Play.CFrame.X-CFrameplay.X)/Mini_Map.length*2,0, 0.5+(Play.CFrame.Z-CFrameplay.Z)/Mini_Map.length*2,0)
+            human.Parent = Map
+            Mini_Map.list_play[i.Name]=human
+        end
+    end
+    for _, i in ipairs(dest:GetChildren()) do
+        if i:IsA("Model") and i.Name == "Desk" then
+            local Size = i:GetExtentsSize()
+            local Po = i:GetPivot()
+            if desk then
+                local desk1 = desk:Clone()
+                desk1.Size = UDim2.new(Size.X / 150, 0, Size.Z / 150, 0)
+                desk1.Position = UDim2.new(0.5+(Play.CFrame.X-Po.X)/Mini_Map.length*2,0, 0.5+(Play.CFrame.Z-Po.Z)/Mini_Map.length*2,0)
+                desk1.Parent = Map
+                table.insert(list1, desk1)
+            end
         end
     end
     return list1
 end
 
-local playInstance = nil
-local teacherInstance = nil
-local map_open = nil
-local list_desk= nil
+local function tool_Equit(toolName)
+    local humanoid = Character:FindFirstChildOfClass("Humanoid")
+    if toolName == "" then
+        if humanoid then humanoid:UnequipTools() end
+        return
+    end
+    local var=Character:FindFirstChild(toolName)
+    if var then return end
+    local monDo = backPack:FindFirstChild(toolName)
+    if humanoid and monDo then
+        humanoid:EquipTool(monDo)
+    else
+        showNotification("err", "Không tìm thấy nhân vật hoặc công cụ: " .. toolName)
+    end
+end
 
-ButMap=addToggle("Show Map",function (ed)
-    FrameMap.Visible=ed
+local function auto_Farme_Logic()
+    if not playAnimRemote or not toolActionRemote then return end
+    local var = 1
+    playAnimRemote:FireServer("Phone1", "Use")
+    toolActionRemote:FireServer("Phone1", "Use")
+    task.wait(2)
+    
+    playAnimRemote:FireServer("Phone1", "SecondUse")
+    toolActionRemote:FireServer("Phone1", "SecondUse")
+    task.wait(3)
+    
+    playAnimRemote:FireServer("Phone1", "Idle")
+    toolActionRemote:FireServer("Phone1", "Unequip")
+    playAnimRemote:FireServer("Phone1", "stop")
+    task.wait(0.2)
+    if Main1.answer and Main1.answer.Text then
+        local ansTable = string.split(Main1.answer.Text, "\n")
+        for _, i in ipairs(ansTable) do
+            local fe = string.gsub(i,"%.","")
+            local j=string.split(fe," ")
+            print(j[1],j[2])
+            var=tonumber(j[1])
+            if var then 
+                PlayerAnswerTable:InvokeServer(var,j[2]) 
+            else
+                showNotification("err","loi so")
+            end
+        end
+    end
+    return var
+end
+
+ButMap = addToggle("Show Map", function(ed)
+    FrameMap.Visible = ed
+    Gui.map_open = ed
     if ed then
         local roomContainer = Class:FindFirstChild("Room")
         local room2 = roomContainer and (roomContainer:FindFirstChild("Room2") or roomContainer:FindFirstChild("Room1"))
-        if not room2 then showNotification("err","chua tim thay room")
-        else
-            list_desk=show_dest(room2)
+        if not room2 then 
+            showNotification("err", "chua tim thay room")
+        else 
+            Mini_Map.list_desk = show_Mini(room2)
         end
-        playInstance = circle:Clone()
-        playInstance.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        playInstance.Parent = Map
-        teacherInstance = circle:Clone()
-        teacherInstance.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        teacherInstance.Parent = Map
-        map_open=task.spawn(function()
-            while true do
-                update(playInstance, teacherInstance)
-                task.wait(0.1)
-            end
-        end)
     else
-        if map_open then task.cancel(map_open) map_open = nil end
-        if playInstance then playInstance:Destroy() playInstance = nil end
-        if teacherInstance then teacherInstance:Destroy() teacherInstance = nil end
-        if list_desk then
-            for _,i in ipairs(list_desk) do
+        if Mini_Map.list_play then
+            for _,i in ipairs(Mini_Map.list_play) do
                 i:Destroy()
             end
-            list_desk = nil
+            Mini_Map.list_play={}
+        if Mini_Map.list_desk then
+            for _,i in ipairs(Mini_Map.list_desk) do
+                i:Destroy()
+            end
+            Mini_Map.list_desk = {}
         end
     end
 end)
-ButMap.Parent=Main
+ButMap.Parent = Main
 
+autoFarmeBtn = addToggle("Auto Farme", function(ed)
+    Gui.autoFarme = ed
+    if not ed and Main1.auto_Farme then
+        task.cancel(Main1.auto_Farme)
+        Main1.auto_Farme = nil
+        playAnimRemote:FireServer("Phone1", "stop")
+        tool_Equit("Pencil")
+    end
+end)
+autoFarmeBtn.Parent = Main
+
+RunService.RenderStepped:Connect(function()
+    update()
+    if Gui.map_open then
+        if Mini_Map.playInstance then
+            Mini_Map.playInstance.Rotation=Play.Rotation
+            Map.Rotation = -Play.Rotation
+        end
+        if Mini_Map.teacherInstance then
+            Mini_Map.teacherInstance.Position = Teacher.Position
+            Mini_Map.teacherInstance.Rotation = Teacher.Rotation
+        end
+    end
+    if Gui.autoFarme and Main1.seat and Play.CFrame and Teacher.CFrame then
+        if Main1.anxiety.nub and (Main1.anxiety.nub.Size.X.Scale>=0.9 or Main1.anxiety.var) then
+            Main1.anxiety.var=true
+            if Main1.anxiety.nub.Size.X.Scale<=0.5 then Main1.anxiety.var=false end
+            if Main1.auto_Farme then 
+                task.cancel(Main1.auto_Farme) 
+                Main1.auto_Farme = nil 
+            end
+            playAnimRemote:FireServer("Phone1", "stop")
+            tool_Equit("Pencil")
+            return
+        end
+        local distance = (Play.CFrame.Position - Teacher.CFrame.Position).Magnitude
+        if distance > 28 or (distance >= 10 and huong_nh(Play.CFrame,Teacher.CFrame,Teacher.Rotation))then
+            if not Main1.auto_Farme then
+                Main1.auto_Farme = task.spawn(function()
+                    local phone = backPack:FindFirstChild("Phone1") or Character:FindFirstChild("Phone1")
+                    local Answers = phone and phone:FindFirstChild("Phone") and phone.Phone:FindFirstChild("Screen") 
+                        and phone.Phone.Screen:FindFirstChild("SurfaceGui") and phone.Phone.Screen.SurfaceGui:FindFirstChild("Frame") 
+                        and phone.Phone.Screen.SurfaceGui.Frame:FindFirstChild("AnswersText")
+                    
+                    local startRound = Main1.seat:FindFirstChild("StartRoundEnv")
+                    local paper = startRound and startRound:FindFirstChild("AnswerPaper") 
+                        and startRound.AnswerPaper:FindFirstChild("AnswerPaperSurfaceGui") 
+                        and startRound.AnswerPaper.AnswerPaperSurfaceGui:FindFirstChild("Paper")
+                    
+                    if not Answers or not paper then 
+                        showNotification("err", "Không tìm thấy giao diện Điện thoại hoặc Tờ giấy")
+                        Main1.auto_Farme = nil
+                        return 
+                    end
+                    
+                    local len = #paper:GetChildren() - 5
+                    Main1.len = len
+                    Main1.answer = Answers
+                    if Main1.answer.Text=="" then Main1.answer.Text="1000" end
+                    tool_Equit("Phone1")
+                    local var=1
+                    while Gui.autoFarme and Main1.seat and var and var <= Main1.len do 
+                        var=auto_Farme_Logic() or 1
+                    end
+                    Main1.auto_Farme = nil
+                end)
+            end
+        else
+            if Main1.auto_Farme then 
+                task.cancel(Main1.auto_Farme) 
+                Main1.auto_Farme = nil 
+            end
+            playAnimRemote:FireServer("Phone1", "stop")
+            tool_Equit("Pencil")
+        end
+    end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function(newChar)
+    Character = newChar
+    local humanoid = newChar:WaitForChild("Humanoid")
+    humanoid.Seated:Connect(function(isSitting, seat)
+        if isSitting and seat then
+            Main1.seat = seat
+        else
+            Main1.seat = nil
+        end
+    end)
+end)
+
+if Character:FindFirstChild("Humanoid") then
+    Character.Humanoid.Seated:Connect(function(isSitting, seat)
+        if isSitting and seat then
+            Main1.seat = seat
+        else
+            Main1.seat = nil
+        end
+    end)
+end
+
+Players.PlayerAdded:Connect(function(play)
+    if not Gui.map_open then return end
+    local char=play.Character or play.CharacterAdded:Wait()
+    if not char then return end
+    if play ~= LocalPlayer and not Mini_Map.list_play[play.Name] then
+        local CFrameplay=char:GetPivot()
+        local human = circle:Clone()
+        human.Position = UDim2.new(0.5+(Play.CFrame.X-CFrameplay.X)/Mini_Map.length*2,0, 0.5+(Play.CFrame.Z-CFrameplay.Z)/Mini_Map.length*2,0)
+        human.Parent = Map
+        Mini_Map.list_play[play.Name]=human
+    end
+end)
+
+Players.PlayerRemoving:Connect(function(play)
+    local human=Mini_Map.list_play[play.Name]
+    if not human then return end
+    human:Destroy()
+    Mini_Map.list_play[play.Name]=nil
+end)
