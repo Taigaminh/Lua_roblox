@@ -21,9 +21,13 @@ local THEME = {
 }
 
 local corner = Instance.new("UICorner")
+corner.Name="UICorner"
 corner.CornerRadius = UDim.new(0, radius or 6)
 
 local function addCorner(parent, radius)
+    if not parent then return end
+    local var = parent:FindFirstChild("UICorner")
+    if var then var:Destroy() end
     local corner1 = corner:Clone()
     corner1.Parent = parent
     return corner1
@@ -56,7 +60,6 @@ Icon.BorderSizePixel = 0
 Icon.Parent = frameIcon
 addCorner(Icon, 10)
 
--- Khung Main Menu
 local frame = Instance.new("Frame")
 frame.Name = "frame"
 frame.Size = UDim2.new(0, 520, 0, 340)
@@ -67,10 +70,9 @@ frame.ClipsDescendants = true
 frame.Parent = MenuGUI
 addCorner(frame, 10)
 
--- Thanh Tiêu Đề (Title Bar)
 local Title = Instance.new("TextButton")
 Title.Name = "Title"
-Title.Text = "  nhỏ nhạc Hub  |  make by: Next :>"
+Title.Text = "  nho nhặc Hub  |  make by: Next :>"
 Title.Font = Enum.Font.GothamBold
 Title.TextSize = 14
 Title.TextColor3 = THEME.Accent
@@ -112,11 +114,13 @@ MenuScrolling.Parent = frame
 addCorner(MenuScrolling, 8)
 
 local LeftListLayout = Instance.new("UIListLayout")
+LeftListLayout.Name="LeftListLayout"
 LeftListLayout.Padding = UDim.new(0, 4)
 LeftListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 LeftListLayout.Parent = MenuScrolling
 
 local LeftPadding = Instance.new("UIPadding")
+LeftPadding.Name="LeftPadding"
 LeftPadding.PaddingTop = UDim.new(0, 4)
 LeftPadding.PaddingBottom = UDim.new(0, 4)
 LeftPadding.PaddingLeft = UDim.new(0, 4)
@@ -125,11 +129,10 @@ LeftPadding.Parent = MenuScrolling
 
 -- Template Nút Bấm
 local textButton = Instance.new("TextButton")
-textButton.Name = "Button"
+textButton.Name="textButton"
 textButton.Font = Enum.Font.GothamMedium
 textButton.TextSize = 13
 textButton.TextColor3 = THEME.Text
-textButton.Size = UDim2.new(1, 0, 0, 32)
 textButton.BackgroundColor3 = THEME.Button
 textButton.BorderSizePixel = 0
 addCorner(textButton, 6)
@@ -149,11 +152,13 @@ Scrolling.CanvasSize = UDim2.new(0, 0, 0, 0)
 addCorner(Scrolling, 8)
 
 local RightListLayout = Instance.new("UIListLayout")
+RightListLayout.Name="RightListLayout"
 RightListLayout.Padding = UDim.new(0, 6)
 RightListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 RightListLayout.Parent = Scrolling
 
 local RightPadding = Instance.new("UIPadding")
+RightPadding.Name="RightPadding"
 RightPadding.PaddingTop = UDim.new(0, 6)
 RightPadding.PaddingBottom = UDim.new(0, 6)
 RightPadding.PaddingLeft = UDim.new(0, 6)
@@ -166,56 +171,50 @@ end)
 
 -- Template TextBox
 local textTextBox = Instance.new("TextBox")
-textTextBox.Name = "TextBox"
+textTextBox.Name="textTextBox"
 textTextBox.Font = Enum.Font.Gotham
 textTextBox.TextSize = 13
-textTextBox.TextColor3 = THEME.Text
-textTextBox.Size = UDim2.new(1, 0, 0, 32)
+textTextBox.TextColor3 = THEME.Accent
 textTextBox.BackgroundColor3 = THEME.Button
 textTextBox.BorderSizePixel = 0
 textTextBox.PlaceholderColor3 = THEME.TextSub
 textTextBox.ClearTextOnFocus = false
 addCorner(textTextBox, 6)
 
--- Template Dropdown Frame
-local frameTop = Instance.new("Frame")
-frameTop.Name = "frameTop"
-frameTop.Size = UDim2.new(1, 0, 0, 32)
-frameTop.BackgroundColor3 = THEME.Button
-frameTop.BorderSizePixel = 0
-addCorner(frameTop, 6)
+local FrameTop = Instance.new("Frame")
+FrameTop.Name="FrameTop"
+FrameTop.BackgroundColor3 = THEME.Container
+FrameTop.BorderSizePixel = 0
+addCorner(FrameTop, 6)
 
--- Notification UI
-local FrameNotification = Instance.new("Frame")
+local TextLabelTop = Instance.new("TextLabel")
+TextLabelTop.Name="TextLabelTop"
+TextLabelTop.Font = Enum.Font.GothamBold
+TextLabelTop.TextSize = 12
+TextLabelTop.TextColor3 = THEME.Accent
+TextLabelTop.BackgroundColor3 = THEME.Button
+TextLabelTop.BackgroundTransparency = 1
+TextLabelTop.TextXAlignment = Enum.TextXAlignment.Left
+TextLabelTop.TextWrapped = true
+addCorner(TextLabelTop, 6)
+
+local FrameNotification = FrameTop:Clone()
 FrameNotification.Name = "FrameNotification"
 FrameNotification.Size = UDim2.new(0, 220, 0, 60)
 FrameNotification.Position = UDim2.new(1, 10, 0, 20)
-FrameNotification.BackgroundColor3 = THEME.Container
-FrameNotification.BorderSizePixel = 0
 FrameNotification.Visible = false
 addCorner(FrameNotification, 8)
 
-local TitleNotification = Instance.new("TextLabel")
-TitleNotification.Name = "TitleNotification"
-TitleNotification.Font = Enum.Font.GothamBold
-TitleNotification.TextSize = 13
-TitleNotification.TextColor3 = THEME.Accent
+local TitleNotification = TextLabelTop:Clone()
+TitleNotification.Name="TitleNotification"
 TitleNotification.Size = UDim2.new(1, -10, 0, 25)
 TitleNotification.Position = UDim2.new(0, 10, 0, 0)
-TitleNotification.BackgroundTransparency = 1
-TitleNotification.TextXAlignment = Enum.TextXAlignment.Left
 TitleNotification.Parent = FrameNotification
 
-local MgsNotification = Instance.new("TextLabel")
+local MgsNotification = TextLabelTop:Clone()
 MgsNotification.Name = "MgsNotification"
-MgsNotification.Font = Enum.Font.Gotham
-MgsNotification.TextSize = 12
-MgsNotification.TextColor3 = THEME.Text
 MgsNotification.Size = UDim2.new(1, -20, 0, 30)
 MgsNotification.Position = UDim2.new(0, 10, 0, 25)
-MgsNotification.BackgroundTransparency = 1
-MgsNotification.TextXAlignment = Enum.TextXAlignment.Left
-MgsNotification.TextWrapped = true
 MgsNotification.Parent = FrameNotification
 
 -- Notification Logic
@@ -265,6 +264,7 @@ ButtonTop.__index = ButtonTop
 function ButtonTop.addButton(Name)
     local Child = {}
     Child.button = textButton:Clone()
+    Child.button.Size=UDim2.new(1, 0, 0, 32)
     Child.button.Text = Name
     Child.button.Parent = MenuScrolling
     
@@ -287,6 +287,7 @@ end
 local function addToggle(Text, Callback)
     local Enabled = false
     local buttonToggle = textButton:Clone()
+    buttonToggle.Size=UDim2.new(1, 0, 0, 32)
     buttonToggle.Text = Text .. " : OFF"
     buttonToggle.TextColor3 = THEME.ToggleOff
     
@@ -306,6 +307,7 @@ end
 
 local function addClickButton(Text, Callback)
     local ClickBtn = textButton:Clone()
+    ClickBtn.Size=UDim2.new(1, 0, 0, 32)
     ClickBtn.Text = Text
     ClickBtn.MouseButton1Click:Connect(function()
         if Callback then task.spawn(Callback) end
@@ -315,6 +317,7 @@ end
 
 local function addTextBox(Placeholder)
     local NewTextBox = textTextBox:Clone()
+    NewTextBox.Size=UDim2.new(1, 0, 0, 32)
     NewTextBox.PlaceholderText = Placeholder
     NewTextBox.Text = ""
     
@@ -333,7 +336,7 @@ local function SearchButton(listBase)
         DropdownList = nil
     }
     
-    local Frameem = frameTop:Clone()
+    local Frameem = FrameTop:Clone()
     local textButtonFind = textButton:Clone()
     textButtonFind.Text = listBase[1] or "Select Option..."
     textButtonFind.Size = UDim2.new(1, 0, 1, 0)
@@ -357,6 +360,7 @@ local function SearchButton(listBase)
     
     for _, i in ipairs(listBase) do
         local ButtonInto = textButton:Clone()
+        ButtonInto.Size=UDim2.new(1, 0, 0, 32)
         ButtonInto.Text = i
         ButtonInto.ZIndex = 21
         ButtonInto.Parent = ScrollingList
@@ -438,7 +442,7 @@ local Mis = ButtonTop.addButton("Mis")
 
 local Class = workspace:WaitForChild("Classroom")
 
-local FrameMap=frameTop:Clone()
+local FrameMap=FrameTop:Clone()
 FrameMap.Size=UDim2.new(0,150,0,150)
 FrameMap.Position=UDim2.new(0.5,0,0.5,0)
 FrameMap.BackgroundTransparency=0.35
@@ -451,7 +455,7 @@ Title_Map.Size=UDim2.new(1,0,0.2,0)
 Title_Map.Position=UDim2.new(0,0,-0.2,0)
 Title_Map.Parent=FrameMap
 
-local Map=frameTop:Clone()
+local Map=FrameTop:Clone()
 Map.Size=UDim2.new(1,0,1,0)
 Map.Position=UDim2.new(0,0,0,0)
 Map.Parent=FrameMap
@@ -475,6 +479,7 @@ uiCorner.CornerRadius = UDim.new(1, 0)
 uiCorner.Parent=circle
 
 local desk = Instance.new("Frame")
+desk.Name="desk"
 desk.AnchorPoint = Vector2.new(0.5,0.5)
 desk.BackgroundTransparency = 1
 local uiStroke = Instance.new("UIStroke")
@@ -507,6 +512,11 @@ teacher_look.Parent=teacherInstance1
 local Play = { CFrame = nil, Position = nil, Rotation = nil }
 local Teacher = { CFrame = nil, Position = nil, Rotation = nil }
 
+local StatSut1 = {
+    count=0,
+    len=0
+}
+
 local Mini_Map = {
     var=0,
     fov=70,
@@ -527,7 +537,6 @@ local Main1 = {
     count = 0,
     answer = nil,
     seat = nil,
-    len = 0,
     anxiety = {
         nub=nil,
         var=false
@@ -564,13 +573,10 @@ end
 
 local function update()
     local Play_Po = Character:GetPivot()
-    if Play_Po then
-        Play.CFrame = Play_Po
-        Play.Position = UDim2.new(0.5, 0, 0.5, 0)
-        Play.Rotation = getPlayerRotation(Character)
-    else
-        showNotification("err", "khong thay play")
-    end
+    if not Play_Po then showNotification("err", "khong thay play") return end
+    Play.CFrame = Play_Po
+    Play.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Play.Rotation = getPlayerRotation(Character)
 
     local Teacher1 = Workspace:FindFirstChild("Teacher")
     if Teacher1 then
@@ -658,7 +664,7 @@ local function auto_Farme_Logic()
     return var
 end
 
-ButMap = addToggle("Show Map", function(ed)
+local ButMap = addToggle("Show Map", function(ed)
     FrameMap.Visible = ed
     Gui.map_open = ed
     if ed then
@@ -671,7 +677,7 @@ ButMap = addToggle("Show Map", function(ed)
         end
     else
         if Mini_Map.list_play then
-            for _,i in ipairs(Mini_Map.list_play) do
+            for _,i in pairs(Mini_Map.list_play) do
                 i:Destroy()
             end
             Mini_Map.list_play={}
@@ -686,7 +692,12 @@ ButMap = addToggle("Show Map", function(ed)
 end)
 ButMap.Parent = Main
 
-autoFarmeBtn = addToggle("Auto Farme", function(ed)
+local StatSut=TextLabelTop:Clone()
+StatSut.Size=UDim2.new(1, 0, 0, 32)
+StatSut.Text="../.."
+StatSut.Parent=Main
+
+local autoFarmeBtn = addToggle("Auto Farme", function(ed)
     Gui.autoFarme = ed
     if not ed and Main1.auto_Farme then
         task.cancel(Main1.auto_Farme)
@@ -705,11 +716,13 @@ RunService.RenderStepped:Connect(function()
             Map.Rotation = -Play.Rotation
         end
         if Mini_Map.teacherInstance then
-            Mini_Map.teacherInstance.Position = Teacher.Position
+            Mini_Map.teacherInstance.Position = Teacher.Position or UDim2.new(0,0,0,0)
             Mini_Map.teacherInstance.Rotation = Teacher.Rotation
         end
     end
     if Gui.autoFarme and Main1.seat and Play.CFrame and Teacher.CFrame then
+        local distance = (Play.CFrame.Position - Teacher.CFrame.Position).Magnitude
+        Title_Map.Text="Mini map\n".."teacher stun :"..math.ceil(distance)
         if Main1.anxiety.nub and (Main1.anxiety.nub.Size.X.Scale>=0.9 or Main1.anxiety.var) then
             Main1.anxiety.var=true
             if Main1.anxiety.nub.Size.X.Scale<=0.5 then Main1.anxiety.var=false end
@@ -721,36 +734,38 @@ RunService.RenderStepped:Connect(function()
             tool_Equit("Pencil")
             return
         end
-        local distance = (Play.CFrame.Position - Teacher.CFrame.Position).Magnitude
-        if distance > 28 or (distance >= 15 and huong_nh(Play.CFrame,Teacher.CFrame,Teacher.Rotation))then
+        if distance > 28 or (distance > 20 and huong_nh(Play.CFrame,Teacher.CFrame,Teacher.Rotation))then
             if not Main1.auto_Farme then
+                local phone = backPack:FindFirstChild("Phone1") or Character:FindFirstChild("Phone1")
+                local Answers = phone and phone:FindFirstChild("Phone") and phone.Phone:FindFirstChild("Screen") and phone.Phone.Screen:FindFirstChild("SurfaceGui") and phone.Phone.Screen.SurfaceGui:FindFirstChild("Frame") and phone.Phone.Screen.SurfaceGui.Frame:FindFirstChild("AnswersText")
+                
+                local startRound = Main1.seat:FindFirstChild("StartRoundEnv")
+                local paper = startRound and startRound:FindFirstChild("AnswerPaper") and startRound.AnswerPaper:FindFirstChild("AnswerPaperSurfaceGui") and startRound.AnswerPaper.AnswerPaperSurfaceGui:FindFirstChild("Paper")
+                    
+                if not Answers or not paper then 
+                    showNotification("err", "Không tìm thấy giao diện Điện thoại hoặc Tờ giấy")
+                    Main1.auto_Farme = nil
+                    StatSut.Text="../.."
+                    return 
+                end
                 Main1.auto_Farme = task.spawn(function()
-                    local phone = backPack:FindFirstChild("Phone1") or Character:FindFirstChild("Phone1")
-                    local Answers = phone and phone:FindFirstChild("Phone") and phone.Phone:FindFirstChild("Screen") 
-                        and phone.Phone.Screen:FindFirstChild("SurfaceGui") and phone.Phone.Screen.SurfaceGui:FindFirstChild("Frame") 
-                        and phone.Phone.Screen.SurfaceGui.Frame:FindFirstChild("AnswersText")
-                    
-                    local startRound = Main1.seat:FindFirstChild("StartRoundEnv")
-                    local paper = startRound and startRound:FindFirstChild("AnswerPaper") 
-                        and startRound.AnswerPaper:FindFirstChild("AnswerPaperSurfaceGui") 
-                        and startRound.AnswerPaper.AnswerPaperSurfaceGui:FindFirstChild("Paper")
-                    
-                    if not Answers or not paper then 
-                        showNotification("err", "Không tìm thấy giao diện Điện thoại hoặc Tờ giấy")
-                        Main1.auto_Farme = nil
-                        return 
+                    local len=0
+                    for _,i in ipairs(paper:GetChildren()) do
+                        if i:IsA("CanvasGroup") and i.GroupTransparency==0 then
+                            len=len+1
+                        end
                     end
-                    
-                    local len = #paper:GetChildren() - 5
-                    Main1.len = len
+                    StatSut1.len = len
                     Main1.answer = Answers
                     if Main1.answer.Text=="" then Main1.answer.Text="1000" end
                     tool_Equit("Phone1")
                     local var=1
-                    while Gui.autoFarme and Main1.seat and var and var < Main1.len do 
+                    while Gui.autoFarme and Main1.seat and var and var < StatSut1.len do 
                         var=auto_Farme_Logic() or 1
+                        StatSut.Text=tonumber(var).."/"..tonumber(StatSut1.len)
                     end
-                    Main1.auto_Farme = nil
+                    StatSut.Text=StatSut.Text.."Done"
+                    task.wait()
                 end)
             end
         else
@@ -805,3 +820,4 @@ Players.PlayerRemoving:Connect(function(play)
     human:Destroy()
     Mini_Map.list_play[play.Name]=nil
 end)
+
