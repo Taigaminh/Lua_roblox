@@ -519,7 +519,7 @@ local StatSut1 = {
 
 local Mini_Map = {
     var=0,
-    fov=70,
+    fov=85,
     length=300,
     playInstance = playInstance1,
     teacherInstance = teacherInstance1,
@@ -744,6 +744,7 @@ RunService.RenderStepped:Connect(function()
                     
                 if not Answers or not paper then 
                     showNotification("err", "Không tìm thấy giao diện Điện thoại hoặc Tờ giấy")
+                    task.cancel(Main1.auto_Farme) 
                     Main1.auto_Farme = nil
                     StatSut.Text="../.."
                     return 
@@ -757,6 +758,7 @@ RunService.RenderStepped:Connect(function()
                     end
                     StatSut1.len = len
                     Main1.answer = Answers
+                    StatSut.Text="../"..tonumber(len)
                     if Main1.answer.Text=="" then Main1.answer.Text="1000" end
                     tool_Equit("Phone1")
                     local var=1
@@ -765,7 +767,7 @@ RunService.RenderStepped:Connect(function()
                         StatSut.Text=tonumber(var).."/"..tonumber(StatSut1.len)
                     end
                     StatSut.Text=StatSut.Text.."Done"
-                    task.wait()
+                    task.wait(9999999999999999999999999999999999)
                 end)
             end
         else
