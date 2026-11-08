@@ -544,7 +544,12 @@ local jumpinf=addToggle("infjump",Main,function(ed)
 end)
 
 local humanoid = Character:WaitForChild("Humanoid")
-
+LocalPlayer.CharacterAdded:Connect(function(newCharacter)
+    local humanoid = newCharacter:WaitForChild("Humanoid", 5)
+    if humanoid then
+        humanoid.WalkSpeed = speed.Value
+    end
+end)
 UserInputService.InputEnded:Connect(function(input)
     for _,i in ipairs(MainT.InputList) do
         if i.Dragging and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
